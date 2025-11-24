@@ -17,22 +17,29 @@ def chat():
     while True:
         user_input = input("You: ")
         
-        # Check if user wants to exit
-        conversation_history.append({"role": "user", "content": user_input})
-        
+        # Check if user wants to exit using logit_bias
         intent_response = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL"),
             messages=[
-                {"role": "system", "content": "Classify if the user's intent is to exit/leave/quit the conversation. Respond with only 'EXIT' or 'CONTINUE'."},
+                {"role": "system", "content": "Classify the user's intent. Respond with only '0' if they want to continue the conversation, or '1' if they want to exit/leave/quit."},
                 {"role": "user", "content": user_input}
-            ]
+            ],
+            max_tokens=1,
+            temperature=0,
+            logit_bias={
+                "15": 100,  # Token for "0"
+                "16": 100   # Token for "1"
+            }
         )
         
-        intent = intent_response.choices[0].message.content.strip().upper()
+        intent = intent_response.choices[0].message.content.strip()
         
-        if intent == "EXIT":
+        if intent == "1":
             print("Bot: Goodbye! Have a great day!\n")
             break
+        
+        # Add to conversation history only if continuing
+        conversation_history.append({"role": "user", "content": user_input})
         
         # Normal conversation
         response = client.chat.completions.create(
