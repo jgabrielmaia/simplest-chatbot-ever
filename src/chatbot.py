@@ -64,9 +64,11 @@ def chat():
             console.print("[bold yellow]Bot:[/bold yellow] I'm sorry, I can only help with general questions and appropriate conversation topics.\n")
             continue
         
-        # Generate and display response
-        bot_message = chat_agent.respond(user_input)
-        console.print(f"[bold cyan]Bot:[/bold cyan] {bot_message}\n")
+        # Generate and display streaming response
+        console.print("[bold cyan]Bot:[/bold cyan] ", end="")
+        for chunk in chat_agent.respond_stream(user_input):
+            console.print(chunk, end="")
+        console.print("\n")
 
 
 if __name__ == "__main__":

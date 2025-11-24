@@ -22,3 +22,22 @@ class ChatAgent:
         self.conversation_history.append({"role": "assistant", "content": bot_message})
         
         return bot_message
+    
+    def respond_stream(self, user_input: str):
+        """Generate a streaming response to user input"""
+        self.conversation_history.append({"role": "user", "content": user_input})
+        
+        stream = self.client.chat.completions.create(
+            model=self.model,
+            messages=self.conversation_history,
+            stream=True
+        )
+        
+        bot_message = ""
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                content = chunk.choices[0].delta.content
+                bot_message += content
+                yield content
+        
+        self.conversation_history.append({"role": "assistant", "content": bot_message})
