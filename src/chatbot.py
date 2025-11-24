@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.panel import Panel
 
 from src.intent_classifier import IntentClassifier
 from src.chat_agent import ChatAgent
@@ -11,6 +14,7 @@ load_dotenv()
 
 def chat():
     """Main chat loop orchestrating the two agents"""
+    console = Console()
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     model = os.getenv("OPENAI_MODEL")
     
@@ -45,25 +49,24 @@ def chat():
     security_classifier = IntentClassifier(client, model, security_intent_prompt)
     chat_agent = ChatAgent(client, model)
     
-    print("Simple Chatbot (say goodbye to exit)")
-    print("-" * 40)
+    console.print(Panel.fit("Simple Chatbot", subtitle="Say goodbye to exit", style="bold cyan"))
     
     while True:
-        user_input = input("You: ")
+        user_input = Prompt.ask("[bold green]You[/bold green]")
         
         # Check if user wants to exit
         if exit_classifier.is_positive(user_input):
-            print("Bot: Goodbye! Have a great day!\n")
+            console.print("[bold cyan]Bot:[/bold cyan] Goodbye! Have a great day!\n")
             break
         
         # Security check - verify input is legitimate
         if not security_classifier.is_positive(user_input):
-            print("Bot: I'm sorry, I can only help with general questions and appropriate conversation topics.\n")
+            console.print("[bold yellow]Bot:[/bold yellow] I'm sorry, I can only help with general questions and appropriate conversation topics.\n")
             continue
         
         # Generate and display response
         bot_message = chat_agent.respond(user_input)
-        print(f"Bot: {bot_message}\n")
+        console.print(f"[bold cyan]Bot:[/bold cyan] {bot_message}\n")
 
 
 if __name__ == "__main__":
