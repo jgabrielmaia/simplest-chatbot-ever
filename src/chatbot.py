@@ -49,7 +49,7 @@ def chat():
     security_classifier = IntentClassifier(client, model, security_intent_prompt)
     chat_agent = ChatAgent(client, model)
     
-    console.print(Panel.fit("Simple Chatbot", subtitle="Say goodbye to exit", style="bold cyan"))
+    console.print(Panel.fit("Just talk to me", subtitle="Chatbot CLI", style="bold cyan"))
     
     while True:
         user_input = Prompt.ask("[bold green]You[/bold green]")

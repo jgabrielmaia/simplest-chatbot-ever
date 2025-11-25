@@ -91,11 +91,12 @@ def test_security_blocks_pirate_prompt(mock_openai_client):
 
 ## File Organization
 ```
-src/          # Source only
-tests/        # Tests only
-main.py       # Entry point
-.env          # Local config (gitignored)
-.env.example  # Template
+src/            # Source only
+tests/          # Tests only
+main.py         # Entry point
+pyproject.toml  # UV package manager config
+.env            # Local config (gitignored)
+.env.example    # Template
 ```
 
 ## What NOT to do
@@ -116,11 +117,19 @@ main.py       # Entry point
 ✅ Keep prompts as module constants  
 ✅ Use pytest fixtures for shared setup  
 
+## Package Management
+```bash
+uv sync                       # Install/update dependencies
+uv add <package>              # Add new dependency
+uv add --dev <package>        # Add dev dependency
+uv run python main.py         # Run with uv
+```
+
 ## Testing Commands
 ```bash
-pytest tests/ -v              # Run all tests
-pytest tests/test_security.py # Run specific file
-pytest -k "security"          # Run matching tests
+uv run pytest tests/ -v              # Run all tests
+uv run pytest tests/test_security.py # Run specific file
+uv run pytest -k "security"          # Run matching tests
 ```
 
 ## Common Tasks

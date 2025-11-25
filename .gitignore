@@ -1,6 +1,9 @@
 # Environment variables
 .env
 
+# UV package manager
+.uv/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -11,6 +14,7 @@ env/
 venv/
 .venv/
 ENV/
+.python-version
 build/
 develop-eggs/
 dist/
