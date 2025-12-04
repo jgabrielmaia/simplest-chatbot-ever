@@ -1,4 +1,5 @@
 import os
+import uuid
 from dotenv import load_dotenv
 from openai import OpenAI
 from rich.console import Console
@@ -7,12 +8,12 @@ from rich.panel import Panel
 
 from src.intent_classifier import IntentClassifier
 from src.chat_agent import ChatAgent
+from src.rag_chat_agent import RAGChatAgent
 
-# Load environment variables from .env file
 load_dotenv()
 
 
-def chat():
+def chat(use_memory: bool = False):
     """Main chat loop orchestrating the two agents"""
     console = Console()
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -47,9 +48,23 @@ def chat():
     # Initialize agents
     exit_classifier = IntentClassifier(client, model, exit_intent_prompt)
     security_classifier = IntentClassifier(client, model, security_intent_prompt)
-    chat_agent = ChatAgent(client, model)
     
-    console.print(Panel.fit("Just talk to me", subtitle="Chatbot CLI", style="bold cyan"))
+    if use_memory:
+        session_id = str(uuid.uuid4())
+        chat_agent = RAGChatAgent(
+            client, 
+            model, 
+            session_id,
+            top_k=int(os.getenv("RAG_TOP_K", 3)),
+            recent_turns=int(os.getenv("RAG_RECENT_TURNS", 2))
+        )
+        subtitle = f"Chatbot with Memory | Session: {session_id[:8]}"
+        console.print(Panel.fit("Just talk to me", subtitle=subtitle, style="bold cyan"))
+        console.print("[dim]I'll remember our conversation and recall relevant context when needed.[/dim]")
+        console.print("[dim]Run 'python main.py --inspect' to view stored memories.[/dim]\n")
+    else:
+        chat_agent = ChatAgent(client, model)
+        console.print(Panel.fit("Just talk to me", subtitle="Chatbot CLI", style="bold cyan"))
     
     while True:
         user_input = Prompt.ask("[bold green]You[/bold green]")

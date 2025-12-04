@@ -1,21 +1,24 @@
 # GitHub Copilot Instructions
 
 ## Project Overview
-Simple two-agent chatbot using OpenAI API with intent classification and security validation.
+Simple two-agent chatbot using OpenAI API with intent classification, security validation, and optional RAG memory.
 
 ## Architecture
 - **IntentClassifier**: Generic binary classifier using logit_bias (tokens "15"=0, "16"=1)
 - **ChatAgent**: Conversational agent with message history
-- **Main Flow**: Security check → Exit detection → Chat response
+- **RAGChatAgent**: Enhanced ChatAgent with ChromaDB-based conversation memory
+- **MemoryStore**: ChromaDB wrapper for semantic conversation retrieval
+- **Main Flow**: Security check → Exit detection → Chat response (with optional memory context)
 
 ## Coding Standards
 
 ### General Principles
 - **Lean code only** - no documentation files, no backup copies, no examples
 - **Single responsibility** - each class/function does one thing
-- **Minimal dependencies** - only openai, python-dotenv, pytest
+- **Minimal dependencies** - only openai, python-dotenv, pytest, chromadb, rich
 - **Type hints** - use for function signatures
 - **Docstrings** - only for public APIs, keep brief
+- **Single entry point** - main.py with optional flags (--memory)
 
 ### Source Code (`src/`)
 
@@ -91,12 +94,17 @@ def test_security_blocks_pirate_prompt(mock_openai_client):
 
 ## File Organization
 ```
-src/            # Source only
-tests/          # Tests only
-main.py         # Entry point
-pyproject.toml  # UV package manager config
-.env            # Local config (gitignored)
-.env.example    # Template
+src/                   # Source only
+  ├── chatbot.py       # Main orchestration with optional RAG
+  ├── chat_agent.py    # Base chat agent
+  ├── rag_chat_agent.py # RAG-enhanced chat agent
+  ├── memory_store.py  # ChromaDB wrapper
+  └── intent_classifier.py # Binary classifier
+tests/                 # Tests only
+main.py                # Single entry point (use --memory flag for RAG)
+pyproject.toml         # UV package manager config
+.env                   # Local config (gitignored)
+.env.example           # Template
 ```
 
 ## What NOT to do
@@ -122,7 +130,13 @@ pyproject.toml  # UV package manager config
 uv sync                       # Install/update dependencies
 uv add <package>              # Add new dependency
 uv add --dev <package>        # Add dev dependency
-uv run python main.py         # Run with uv
+```
+
+## Running the Chatbot
+```bash
+uv run python main.py          # Run without memory
+uv run python main.py --memory # Run with RAG memory
+uv run python main.py --inspect # View stored memories
 ```
 
 ## Testing Commands
@@ -130,6 +144,7 @@ uv run python main.py         # Run with uv
 uv run pytest tests/ -v              # Run all tests
 uv run pytest tests/test_security.py # Run specific file
 uv run pytest -k "security"          # Run matching tests
+uv run pytest -k "rag"               # Run RAG tests only
 ```
 
 ## Common Tasks

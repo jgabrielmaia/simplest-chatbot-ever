@@ -4,6 +4,9 @@
 # UV package manager
 .uv/
 
+# ChromaDB persistence
+chroma_data/
+
 # Python
 __pycache__/
 *.py[cod]
